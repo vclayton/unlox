@@ -256,6 +256,9 @@ typedef struct {
 	int			voteCount;			// to prevent people from constantly calling votes
 	int			teamVoteCount;		// to prevent people from constantly calling votes
 	qboolean	teamInfo;			// send team overlay updates?
+	// UNLOX - Guided missile speed
+	float		guidedspeed;		// Guided missile speed multiplier (clamped from 0.0 to 1.0)
+	// END UNLOX
 } clientPersistant_t;
 
 
@@ -315,8 +318,8 @@ struct gclient_s {
 	// UNLOX - Offhand grapple
 	qboolean hookHasBeenFired;		// Offhand grapple
 	int			warhead;			// Currently selected warhead type
-	// UNLOX - Guided missile toggle
-	int			guidedmissile;
+	// UNLOX - Guided missile
+	int			guidedmissile;		// toggle guided on/off
 	// END UNLOX
 
 	int			switchTeamTime;		// time the player switched teams

@@ -495,11 +495,9 @@ void Guided_Missile_Think (gentity_t *missile)
 		return;
 	}
 	
+	
 	// Get our forward, right, up vector from the view angle of the player
 	AngleVectors (player->client->ps.viewangles, forward, right, up);
-	
-	// Calculate the player's eyes origin, and store this origin in muzzle
-	CalcMuzzlePoint ( player, forward, right, up, muzzle );
 	
 	// Tells the engine that our movement starts at the current missile's origin
 	VectorCopy (missile->r.currentOrigin, missile->s.pos.trBase );
@@ -508,25 +506,10 @@ void Guided_Missile_Think (gentity_t *missile)
 	missile->s.pos.trType = TR_LINEAR;
 	missile->s.pos.trTime = level.time - 50;
 	
-	// Get the dir vector between the player's point of view and the rocket
-	// and store it into muzzle again
-	VectorSubtract (muzzle, missile->r.currentOrigin, muzzle);
-	
-	// Add some range to our "line" so we can go behind blocks
-	// We could have used a trace function here, but the rocket would
-	// have come back if player was aiming on a block while the rocket is behind it
-	// as the trace stops on solid blocks
-	dist = VectorLength (muzzle) + 400;	 //give the range of our muzzle vector + 400 units
-	VectorScale (forward, dist, forward);
-	
-	// line straight forward
-	VectorAdd (forward, muzzle, muzzle);
-	
-	// Normalize the vector so it's 1 unit long, but keep its direction
-	VectorNormalize (muzzle);
-	
+	VectorNormalize (forward);
+	VectorCopy(forward, muzzle);
 	// Slow the rocket down a bit, so we can handle it
-	VectorScale (muzzle, 300, forward);
+	VectorScale (forward, 900 * player->client->pers.guidedspeed, forward);
 	
 	// Set the rockets's velocity so it'll move toward our new direction
 	VectorCopy (forward, missile->s.pos.trDelta);
@@ -780,6 +763,12 @@ gentity_t *fire_rocket (gentity_t *self, vec3_t start, vec3_t dir) {
 		if(self->client->guidedmissile && !self->client->ps.generic1) {
 			bolt->think = Guided_Missile_Think;
 			bolt->nextthink = level.time + FRAMETIME;
+			
+			// Include what this missile sees in the client's Potential Visibility Set
+			// And ensure the missile is always in the client's PVS
+			bolt->r.svFlags = SVF_PORTAL | SVF_BROADCAST;
+			VectorCopy( bolt->s.origin, bolt->s.origin2 );
+			
 			self->client->ps.generic1 = bolt->s.number;
 		}
 	}

@@ -1638,9 +1638,29 @@ Cmd_Warhead_f
 =================
 */
 void Cmd_GuidedMissile_f( gentity_t *ent ) {
+	float speed;
+	char		buffer[MAX_TOKEN_CHARS];
+	int			i;
+	
+	// If they haven't set a speed, assume some reasonable default
+	if(ent->client->pers.guidedspeed < 0.001 || ent->client->pers.guidedspeed > 1.0) {
+		ent->client->pers.guidedspeed = 0.5;
+	}
+	if ( trap_Argc() == 2 ) {
+		trap_Argv( 1, buffer, sizeof( buffer ) );
+		speed = atof( buffer );
+		if(speed > 1.0) {
+			speed = 1.0;
+		} else if(speed<=0.001) {
+			speed = 0.001;
+		}
+		ent->client->pers.guidedspeed = speed;
+	}
+	
 	ent->client->guidedmissile = !ent->client->guidedmissile;
 	trap_SendServerCommand( ent-g_entities, 
-		va("print \"Guided missiles %s\n\"", ent->client->guidedmissile ? "enabled" : "disabled"));
+		va("print \"Guided missiles %s (speed=%f)\n\"", 
+			ent->client->guidedmissile ? "enabled" : "disabled", ent->client->pers.guidedspeed));
 	return;
 }
 // END UNLOX

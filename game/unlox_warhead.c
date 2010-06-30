@@ -3,7 +3,7 @@
 
 void Warhead_Rocket( gentity_t *ent )
 {
-	trap_SendServerCommand( ent->r.ownerNum, va("print \"Rocket goes boom!\n\""));
+//	trap_SendServerCommand( ent->r.ownerNum, va("print \"Rocket goes boom!\n\""));
 }
 
 
@@ -31,7 +31,7 @@ void Warhead_Teleport( gentity_t *ent )
 	vec3_t	origin, angles;
 	gentity_t *parent;
 	
-	trap_SendServerCommand( ent->r.ownerNum, va("print \"Teleport Rocket goes boom!\n\""));
+//	trap_SendServerCommand( ent->r.ownerNum, va("print \"Teleport Rocket goes boom!\n\""));
 	
 	parent = ent->parent;
 	if( !parent->client ) {
