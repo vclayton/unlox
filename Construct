@@ -31,19 +31,19 @@ $do_pk3 = 0;
 # those are exported
 $DO_WIN32 = 0;
 $NO_VM = 0;
-$NO_SO = 0;
+$NO_SO = 1;
 $CC='gcc';
 $CXX='g++';
 
 # detect an sdk build (don't attempt client build and other things)
-if ( -r 'unix/Conscript-client' )
-{
-  $no_core = 0;
-}
-else
-{
+#if ( -r 'unix/Conscript-client' )
+#{
   $no_core = 1;
-}
+#}
+#else
+#{
+#  $no_core = 1;
+#}
 
 # detection of CPU type
 $cpu = `uname -m`;
