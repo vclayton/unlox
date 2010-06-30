@@ -25,6 +25,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "g_local.h"
 
+// UNLOX - Guided missile
+void G_ExplodeMissile( gentity_t *ent ); // For detonating guided missile
+// END UNLOX
+
 static	float	s_quadFactor;
 static	vec3_t	forward, right, up;
 static	vec3_t	muzzle;
@@ -400,7 +404,11 @@ void Weapon_RocketLauncher_Fire (gentity_t *ent) {
 	m = fire_rocket (ent, muzzle, forward);
 	m->damage *= s_quadFactor;
 	m->splashDamage *= s_quadFactor;
-
+	
+	// UNLOX - Guided missile: save missile entityid in player->otherEntityNum
+	ent->client->ps.generic1 = m->s.number;
+	// END UNLOX 
+	
 //	VectorAdd( m->s.pos.trDelta, ent->client->ps.velocity, m->s.pos.trDelta );	// "real" physics
 }
 
@@ -815,6 +823,15 @@ FireWeapon
 ===============
 */
 void FireWeapon( gentity_t *ent ) {
+	// UNLOX - Detonate guided missile
+	if (ent->client->ps.generic1) {
+//		if(g_entities[ent->client->ps.generic1]) {
+			g_entities[ent->client->ps.generic1].think = G_ExplodeMissile;
+			g_entities[ent->client->ps.generic1].nextthink = level.time + 5;
+			return;
+//		}
+	}
+	// END UNLOX
 	if (ent->client->ps.powerups[PW_QUAD] ) {
 		s_quadFactor = g_quadfactor.value;
 	} else {

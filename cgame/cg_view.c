@@ -612,7 +612,12 @@ Sets cg.refdef view values
 */
 static int CG_CalcViewValues( void ) {
 	playerState_t	*ps;
-
+	// UNLOX
+	int missilenum;
+	vec3_t offset;
+	vec3_t forward, right, up; // Missile vectors
+	centity_t *missile;
+	// END UNLOX
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
 
 	// strings for in game rendering
@@ -688,6 +693,20 @@ static int CG_CalcViewValues( void ) {
 	if ( cg.hyperspace ) {
 		cg.refdef.rdflags |= RDF_NOWORLDMODEL | RDF_HYPERSPACE;
 	}
+
+
+	// UNLOX - Missilecam: ps->generic1 should be entitynum of missile
+	if(ps->generic1 > 0) {
+		missile = &cg_entities[ps->generic1];
+		missilenum = ps->generic1;
+		if(missile->currentState.eType==ET_MISSILE) {
+			VectorCopy(missile->lerpOrigin, cg.refdef.vieworg); // Camera at missile origin
+			// @todo It would be nice to back the camera up a bit too.
+			// @todo And is there a more stable origin/angle than lerpOrigin/Angle?
+		}
+	}
+	// END UNLOX
+
 
 	// field of view
 	return CG_CalcFov();
@@ -801,7 +820,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	CG_PredictPlayerState();
 
 	// decide on third person view
-	cg.renderingThirdPerson = cg_thirdPerson.integer || (cg.snap->ps.stats[STAT_HEALTH] <= 0);
+	cg.renderingThirdPerson = cg_thirdPerson.integer || (cg.snap->ps.stats[STAT_HEALTH] <= 0) || cg.snap->ps.generic1;
 
 	// build cg.refdef
 	inwater = CG_CalcViewValues();
@@ -813,7 +832,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	// build the render lists
 	if ( !cg.hyperspace ) {
-		CG_AddPacketEntities();			// adter calcViewValues, so predicted player state is correct
+		CG_AddPacketEntities();			// after calcViewValues, so predicted player state is correct
 		CG_AddMarks();
 		CG_AddParticles ();
 		CG_AddLocalEntities();

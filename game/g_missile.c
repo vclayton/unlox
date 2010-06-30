@@ -87,7 +87,11 @@ void G_ExplodeMissile( gentity_t *ent ) {
 			g_entities[ent->r.ownerNum].client->accuracy_hits++;
 		}
 	}
-
+	
+	// UNLOX - Turn off missilecam
+	ent->parent->client->ps.generic1 = 0;
+	// END UNLOX
+	
 	trap_LinkEntity( ent );
 }
 
@@ -436,8 +440,83 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		}
 	}
 
+	// UNLOX - Reset missilecam
+	ent->parent->client->ps.generic1 = 0;
+	// END UNLOX
+
 	trap_LinkEntity( ent );
 }
+
+
+
+/*
+================
+Guided_Missile_Think
+
+Turn missile to follow player's aim
+From: http://www.quake3hut.co.uk/q3coding/Guided%20Rockets%20and%20Client%20Prediction.htm
+================
+*/
+void Guided_Missile_Think (gentity_t *missile)
+{
+	vec3_t forward, right, up; 
+	vec3_t muzzle;
+	float dist;
+	gentity_t *player = missile->parent;
+	
+	// If our owner can't be found, just return
+	if (!player)
+	{
+		G_Printf ("Guided_Missile_Think : missile has no owner!\n");
+		return;
+	}
+	
+	// Get our forward, right, up vector from the view angle of the player
+	AngleVectors (player->client->ps.viewangles, forward, right, up);
+	
+	// Calculate the player's eyes origin, and store this origin in muzzle
+	CalcMuzzlePoint ( player, forward, right, up, muzzle );
+	
+	// Tells the engine that our movement starts at the current missile's origin
+	VectorCopy (missile->r.currentOrigin, missile->s.pos.trBase );
+	
+	// Trajectory type setup (linear move - fly)
+	missile->s.pos.trType = TR_LINEAR;
+	missile->s.pos.trTime = level.time - 50;
+	
+	// Get the dir vector between the player's point of view and the rocket
+	// and store it into muzzle again
+	VectorSubtract (muzzle, missile->r.currentOrigin, muzzle);
+	
+	// Add some range to our "line" so we can go behind blocks
+	// We could have used a trace function here, but the rocket would
+	// have come back if player was aiming on a block while the rocket is behind it
+	// as the trace stops on solid blocks
+	dist = VectorLength (muzzle) + 400;	 //give the range of our muzzle vector + 400 units
+	VectorScale (forward, dist, forward);
+	
+	// line straight forward
+	VectorAdd (forward, muzzle, muzzle);
+	
+	// Normalize the vector so it's 1 unit long, but keep its direction
+	VectorNormalize (muzzle);
+	
+	// Slow the rocket down a bit, so we can handle it
+	VectorScale (muzzle, 300, forward);
+	
+	// Set the rockets's velocity so it'll move toward our new direction
+	VectorCopy (forward, missile->s.pos.trDelta);
+	
+	// Change the rocket's angle so it'll point toward the new direction
+	vectoangles (muzzle, missile->s.angles);
+	
+	// This should "save net bandwidth" =D
+	SnapVector( missile->s.pos.trDelta );
+	
+	// Call this function in 0,1 s
+	missile->nextthink = level.time + FRAMETIME; 
+}
+// END UNLOX
 
 /*
 ================
@@ -487,6 +566,9 @@ void G_RunMissile( gentity_t *ent ) {
 			if (ent->parent && ent->parent->client && ent->parent->client->hook == ent) {
 				ent->parent->client->hook = NULL;
 			}
+			// UNLOX - Reset missilecam
+			ent->parent->client->ps.generic1 = 0;
+			// END UNLOX
 			G_FreeEntity( ent );
 			return;
 		}
@@ -662,7 +744,15 @@ gentity_t *fire_rocket (gentity_t *self, vec3_t start, vec3_t dir) {
 	bolt->splashMethodOfDeath = MOD_ROCKET_SPLASH;
 	bolt->clipmask = MASK_SHOT;
 	bolt->target_ent = NULL;
-
+	
+	// UNLOX - Guided missile: from http://www.quake3hut.co.uk/q3coding/Guided%20Rockets%20and%20Client%20Prediction.htm
+	if(self->client) // and we want the missile to be guided
+	{
+		bolt->think = Guided_Missile_Think;
+		bolt->nextthink = level.time + FRAMETIME;
+	}
+	// END UNLOX
+	
 	bolt->s.pos.trType = TR_LINEAR;
 	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
 	VectorCopy( start, bolt->s.pos.trBase );
