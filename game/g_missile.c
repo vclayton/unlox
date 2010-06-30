@@ -646,15 +646,15 @@ gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t dir) {
 		bolt->s.eFlags |= EF_BOUNCE;
 		bolt->nextthink = level.time + 1000;
 	}
-
+	
 	bolt->s.pos.trType = TR_LINEAR;
 	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
 	VectorCopy( start, bolt->s.pos.trBase );
 	VectorScale( dir, 2000, bolt->s.pos.trDelta );
 	SnapVector( bolt->s.pos.trDelta );			// save net bandwidth
-
+	
 	VectorCopy (start, bolt->r.currentOrigin);
-
+	
 	return bolt;
 }	
 
@@ -717,9 +717,9 @@ fire_bfg
 */
 gentity_t *fire_bfg (gentity_t *self, vec3_t start, vec3_t dir) {
 	gentity_t	*bolt;
-
+	
 	VectorNormalize (dir);
-
+	
 	bolt = G_Spawn();
 	bolt->classname = "bfg";
 	bolt->nextthink = level.time + 10000;
@@ -736,14 +736,20 @@ gentity_t *fire_bfg (gentity_t *self, vec3_t start, vec3_t dir) {
 	bolt->splashMethodOfDeath = MOD_BFG_SPLASH;
 	bolt->clipmask = MASK_SHOT;
 	bolt->target_ent = NULL;
-
+	// UNLOX - Bouncing
+	if(self->client->rubbergun) {
+		bolt->s.eFlags |= EF_BOUNCE;
+		bolt->nextthink = level.time + 2500;
+	}
+	// END UNLOX
+	
 	bolt->s.pos.trType = TR_LINEAR;
 	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
 	VectorCopy( start, bolt->s.pos.trBase );
 	VectorScale( dir, 2000, bolt->s.pos.trDelta );
 	SnapVector( bolt->s.pos.trDelta );			// save net bandwidth
 	VectorCopy (start, bolt->r.currentOrigin);
-
+	
 	return bolt;
 }
 

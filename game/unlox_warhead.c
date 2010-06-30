@@ -79,22 +79,39 @@ void Warhead_Teleport( gentity_t *ent )
 	TeleportPlayer( parent, origin, angles );
 }
 
-
-void Warhead_Railbomb( gentity_t *ent )
+void Warhead_Rail( gentity_t *ent )
 {
-	vec3_t angles, fwd, rt, up, origForward;
-	int tmpWarhead;
+	vec3_t angles, fwd, origin;
 	int x;
-	float r;
 	
-	for(x=0; x<5; x++) {
-		r = random() * M_PI * 2.0f;
-		VectorSet( angles, r, 0.0, 0.0 );
-//		AngleVectors( angles, forward, rt, up );
-		weapon_railgun_fire( ent );
+	VectorSet( angles, 0.0, 0.0, 0.0 );
+	VectorCopy( ent->r.currentOrigin, origin );
+	origin[2] += 5; // Add 5 to Z axis to prevent spawning in the ground
+	
+	for(x=0; x<360; x+=30) {
+		angles[YAW] = x;
+		angles[PITCH] = random() * 30.0f - 15.0f;
+		AngleVectors( angles, fwd, NULL, NULL );
+		fire_railgun( ent->parent, origin, fwd );
 	}
 }
 
+void Warhead_Plasma( gentity_t *ent )
+{
+	vec3_t angles, fwd, origin;
+	int x;
+	
+	VectorSet( angles, 0.0, 0.0, 0.0 );
+	VectorCopy( ent->r.currentOrigin, origin );
+	origin[2] += 5; // Add 5 to Z axis to prevent spawning in the ground
+	
+	for(x=0; x<360; x+=30) {
+		angles[YAW] = x;
+		angles[PITCH] = random() * 30.0f - 15.0f;
+		AngleVectors( angles, fwd, NULL, NULL );
+		fire_plasma( ent->parent, origin, fwd );
+	}
+}
 
 
 void Warhead_Explode( gentity_t *ent )
@@ -111,8 +128,11 @@ void Warhead_Explode( gentity_t *ent )
 		case WH_TELEPORT:
 			Warhead_Teleport( ent );
 			break;
-		case WH_RAILBOMB:
-			Warhead_Railbomb( ent );
+		case WH_RAIL:
+			Warhead_Rail( ent );
+			break;
+		case WH_PLASMA:
+			Warhead_Plasma( ent );
 			break;
 		default:
 			trap_SendServerCommand( ent->r.ownerNum, va("print \"Unknown warhead type %d\n\"", ent->warhead));

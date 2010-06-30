@@ -2,7 +2,8 @@ typedef enum {
 	WH_ROCKET,
 	WH_CLUSTER,
 	WH_TELEPORT,
-	WH_RAILBOMB,
+	WH_RAIL,
+	WH_PLASMA,
 	WH_MAX,		// Must always be the LAST entry in the enum!
 } warhead_t;
 

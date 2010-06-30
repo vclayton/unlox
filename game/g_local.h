@@ -577,7 +577,7 @@ void SnapVectorTowards( vec3_t v, vec3_t to );
 qboolean CheckGauntletAttack( gentity_t *ent );
 void Weapon_HookFree (gentity_t *ent);
 void Weapon_HookThink (gentity_t *ent);
-
+void fire_railgun( gentity_t *ent, vec3_t start, vec3_t aimdir );
 
 //
 // g_client.c

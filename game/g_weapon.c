@@ -359,14 +359,10 @@ void ShotgunPattern( vec3_t origin, vec3_t origin2, int seed, gentity_t *ent, in
 				ent->client->accuracy_hits++;
 			}
 		} else if(shotType == WP_SHOTRAIL) {
-			VectorCopy(end, forward);
-			weapon_railgun_fire( ent );
-			VectorCopy(localforward, forward);
+			fire_railgun( ent, muzzle, end );
 		} else if(shotType == WP_SHOTGRENADE) {
-			VectorCopy(end, forward);
 			fire_grenade(ent, muzzle, end);
 		} else if(shotType == WP_SHOTPLASMA) {
-			VectorCopy(end, forward);
 			fire_plasma(ent, muzzle, end);
 		}
 	}
@@ -455,13 +451,10 @@ RAILGUN
 */
 
 
-/*
-=================
-weapon_railgun_fire
-=================
-*/
+// UNLOX - factored out of weapon_railgun_fire to make railbombs easier
 #define	MAX_RAIL_HITS	4
-void weapon_railgun_fire (gentity_t *ent) {
+void fire_railgun(gentity_t *ent, vec3_t start, vec3_t aimdir)
+{
 	vec3_t		end;
 #ifdef MISSIONPACK
 	vec3_t impactpoint, bouncedir;
@@ -476,20 +469,20 @@ void weapon_railgun_fire (gentity_t *ent) {
 	int			passent;
 	// UNLOX - Rubber rail
 	int		bounces;
-	vec3_t		origMuzzle;
+	vec3_t		origStart;
 	// END UNLOX
 	gentity_t	*unlinkedEntities[MAX_RAIL_HITS];
 
 	damage = 100 * s_quadFactor;
 
-	VectorMA (muzzle, 8192, forward, end);
+	VectorMA (start, 8192, aimdir, end);
 
 	// trace only against the solids, so the railgun will go through people
 	unlinked = 0;
 	hits = 0;
 	// UNLOX
+	VectorCopy( start, origStart ); // So we don't hose the caller's origin
 	passent = ENTITYNUM_NONE; // ent->s.number; // Yes, you can kill yourself
-	VectorCopy( muzzle, origMuzzle); // Save for later (to not screw up shotrail)
 	bounces = 1; // The initial shot counts as 1 bounce
 	if(ent->client->rubbergun) {
 		bounces = MAX_RAIL_BOUNCE;
@@ -497,7 +490,7 @@ void weapon_railgun_fire (gentity_t *ent) {
 	for(; bounces>0; bounces--) {
 	// END UNLOX
 	do {
-		trap_Trace (&trace, muzzle, NULL, NULL, end, passent, MASK_SHOT );
+		trap_Trace (&trace, start, NULL, NULL, end, passent, MASK_SHOT );
 		if ( trace.entityNum >= ENTITYNUM_MAX_NORMAL ) {
 			break;
 		}
@@ -505,21 +498,21 @@ void weapon_railgun_fire (gentity_t *ent) {
 		if ( traceEnt->takedamage ) {
 #ifdef MISSIONPACK
 			if ( traceEnt->client && traceEnt->client->invulnerabilityTime > level.time ) {
-				if ( G_InvulnerabilityEffect( traceEnt, forward, trace.endpos, impactpoint, bouncedir ) ) {
-					G_BounceProjectile( muzzle, impactpoint, bouncedir, end );
+				if ( G_InvulnerabilityEffect( traceEnt, aimdir, trace.endpos, impactpoint, bouncedir ) ) {
+					G_BounceProjectile( start, impactpoint, bouncedir, end );
 					// snap the endpos to integers to save net bandwidth, but nudged towards the line
-					SnapVectorTowards( trace.endpos, muzzle );
+					SnapVectorTowards( trace.endpos, start );
 					// send railgun beam effect
 					tent = G_TempEntity( trace.endpos, EV_RAILTRAIL );
 					// set player number for custom colors on the railtrail
 					tent->s.clientNum = ent->s.clientNum;
-					VectorCopy( muzzle, tent->s.origin2 );
-					// move origin a bit to come closer to the drawn gun muzzle
+					VectorCopy( start, tent->s.origin2 );
+					// move origin a bit to come closer to the drawn gun start
 					VectorMA( tent->s.origin2, 4, right, tent->s.origin2 );
 					VectorMA( tent->s.origin2, -1, up, tent->s.origin2 );
 					tent->s.eventParm = 255;	// don't make the explosion at the end
 					//
-					VectorCopy( impactpoint, muzzle );
+					VectorCopy( impactpoint, start );
 					// the player can hit him/herself with the bounced rail
 					passent = ENTITYNUM_NONE;
 				}
@@ -528,13 +521,13 @@ void weapon_railgun_fire (gentity_t *ent) {
 				if( LogAccuracyHit( traceEnt, ent ) ) {
 					hits++;
 				}
-				G_Damage (traceEnt, ent, ent, forward, trace.endpos, damage, 0, MOD_RAILGUN);
+				G_Damage (traceEnt, ent, ent, aimdir, trace.endpos, damage, 0, MOD_RAILGUN);
 			}
 #else
 				if( LogAccuracyHit( traceEnt, ent ) ) {
 					hits++;
 				}
-				G_Damage (traceEnt, ent, ent, forward, trace.endpos, damage, 0, MOD_RAILGUN);
+				G_Damage (traceEnt, ent, ent, aimdir, trace.endpos, damage, 0, MOD_RAILGUN);
 #endif
 		}
 		if ( trace.contents & CONTENTS_SOLID ) {
@@ -554,7 +547,7 @@ void weapon_railgun_fire (gentity_t *ent) {
 	// the final trace endpos will be the terminal point of the rail trail
 
 	// snap the endpos to integers to save net bandwidth, but nudged towards the line
-	SnapVectorTowards( trace.endpos, muzzle );
+	SnapVectorTowards( trace.endpos, start );
 
 	// send railgun beam effect
 	tent = G_TempEntity( trace.endpos, EV_RAILTRAIL );
@@ -562,8 +555,8 @@ void weapon_railgun_fire (gentity_t *ent) {
 	// set player number for custom colors on the railtrail
 	tent->s.clientNum = ent->s.clientNum;
 
-	VectorCopy( muzzle, tent->s.origin2 );
-	// move origin a bit to come closer to the drawn gun muzzle
+	VectorCopy( start, tent->s.origin2 );
+	// move origin a bit to come closer to the drawn gun start
 	VectorMA( tent->s.origin2, 4, right, tent->s.origin2 );
 	VectorMA( tent->s.origin2, -1, up, tent->s.origin2 );
 
@@ -596,11 +589,20 @@ void weapon_railgun_fire (gentity_t *ent) {
 		ent->client->accuracy_hits++;
 	}
 	// UNLOX - rail bounce from http://www.quake3hut.co.uk/q3coding/bouncy%20rail.htm
-	G_BounceProjectile( muzzle , trace.endpos , trace.plane.normal, end); //This sets the new angles for the bounce
-	VectorCopy (trace.endpos , muzzle); //copy the end position as the new muzzle
+	G_BounceProjectile( start , trace.endpos , trace.plane.normal, end); //This sets the new angles for the bounce
+	VectorCopy (trace.endpos , start); //copy the end position as the new muzzle
 	}
-	VectorCopy( origMuzzle, muzzle ); // Restore orig muzzle to not screw up shotrail
+	VectorCopy( origStart, start ); // So we don't hose the caller's origin
 	// END UNLOX
+}
+
+/*
+=================
+weapon_railgun_fire
+=================
+*/
+void weapon_railgun_fire (gentity_t *ent) {
+	fire_railgun(ent, muzzle, forward);
 }
 
 
