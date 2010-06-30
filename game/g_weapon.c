@@ -400,14 +400,10 @@ ROCKET
 
 void Weapon_RocketLauncher_Fire (gentity_t *ent) {
 	gentity_t	*m;
-
+	
 	m = fire_rocket (ent, muzzle, forward);
 	m->damage *= s_quadFactor;
 	m->splashDamage *= s_quadFactor;
-	
-	// UNLOX - Guided missile: save missile entityid in player->otherEntityNum
-	ent->client->ps.generic1 = m->s.number;
-	// END UNLOX 
 	
 //	VectorAdd( m->s.pos.trDelta, ent->client->ps.velocity, m->s.pos.trDelta );	// "real" physics
 }

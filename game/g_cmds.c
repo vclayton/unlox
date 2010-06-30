@@ -1590,6 +1590,62 @@ void Cmd_Stats_f( gentity_t *ent ) {
 */
 }
 
+// UNLOX - Selectable warheads
+/*
+=================
+Cmd_Warhead_f
+=================
+*/
+void Cmd_Warhead_f( gentity_t *ent ) {
+	
+	char		buffer[MAX_TOKEN_CHARS];
+	int			i;
+	
+	i = ent->client->warhead;
+	
+	if ( trap_Argc() == 1 ) {
+		trap_SendServerCommand( ent-g_entities, va("print \"Current warhead: %d\n\"", ent->client->warhead));
+		return;
+	}
+	if ( trap_Argc() != 2 ) {
+		trap_SendServerCommand( ent-g_entities, va("print \"usage: warhead n\n\""));
+		return;
+	}
+	
+	trap_Argv( 1, buffer, sizeof( buffer ) );
+	if(Q_stricmp (buffer, "next") == 0) {
+		if( ++i >= WH_MAX ) {
+			i = 0;
+		}
+	} else if(Q_stricmp (buffer, "prev") == 0) {
+		if( i-- == 0 ) {
+			i = WH_MAX-1;
+		}
+	} else {
+		i = atoi( buffer );
+	}
+	
+	ent->client->warhead = i;
+	trap_SendServerCommand( ent-g_entities, va("print \"Warhead mode %d selected\n\"", i));
+	return;
+}
+// END UNLOX
+
+// UNLOX - Toggle guided missiles
+/*
+=================
+Cmd_Warhead_f
+=================
+*/
+void Cmd_GuidedMissile_f( gentity_t *ent ) {
+	ent->client->guidedmissile = !ent->client->guidedmissile;
+	trap_SendServerCommand( ent-g_entities, 
+		va("print \"Guided missiles %s\n\"", ent->client->guidedmissile ? "enabled" : "disabled"));
+	return;
+}
+// END UNLOX
+
+
 /*
 =================
 ClientCommand
@@ -1696,6 +1752,13 @@ void ClientCommand( int clientNum ) {
 		Cmd_SetViewpos_f( ent );
 	else if (Q_stricmp (cmd, "stats") == 0)
 		Cmd_Stats_f( ent );
+	// UNLOX - Selectable warheads
+	else if (Q_stricmp (cmd, "warhead") == 0)
+		Cmd_Warhead_f (ent); 
+	// UNLOX - Toggle guided missiles
+	else if (Q_stricmp (cmd, "guidedmissile") == 0)
+		Cmd_GuidedMissile_f (ent); 
+	// END UNLOX
 	else
 		trap_SendServerCommand( clientNum, va("print \"unknown cmd %s\n\"", cmd ) );
 }

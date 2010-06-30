@@ -1636,10 +1636,12 @@ static void PM_Weapon( void ) {
 	}
 
 	// take an ammo away if not infinite
-	if ( pm->ps->ammo[ pm->ps->weapon ] != -1 ) {
+	// UNLOX - Except if we're guiding a missile
+	if ( pm->ps->ammo[ pm->ps->weapon ] != -1 && pm->ps->generic1==0) {
 		pm->ps->ammo[ pm->ps->weapon ]--;
 	}
-
+	// END UNLOX
+	
 	// fire weapon
 	PM_AddEvent( EV_FIRE_WEAPON );
 

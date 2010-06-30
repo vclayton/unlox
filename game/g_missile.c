@@ -24,6 +24,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	MISSILE_PRESTEP_TIME	50
 
+// UNLOX
+void Warhead_Explode( gentity_t *ent );
+// END UNLOX
+
 /*
 ================
 G_BounceMissile
@@ -87,6 +91,10 @@ void G_ExplodeMissile( gentity_t *ent ) {
 			g_entities[ent->r.ownerNum].client->accuracy_hits++;
 		}
 	}
+	
+	// UNLOX - Warhead type
+	Warhead_Explode( ent );
+	// END UNLOX
 	
 	// UNLOX - Turn off missilecam
 	ent->parent->client->ps.generic1 = 0;
@@ -439,7 +447,11 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			}
 		}
 	}
-
+	
+	// UNLOX - Warhead type
+	Warhead_Explode( ent );
+	// END UNLOX
+	
 	// UNLOX - Reset missilecam
 	ent->parent->client->ps.generic1 = 0;
 	// END UNLOX
@@ -746,10 +758,16 @@ gentity_t *fire_rocket (gentity_t *self, vec3_t start, vec3_t dir) {
 	bolt->target_ent = NULL;
 	
 	// UNLOX - Guided missile: from http://www.quake3hut.co.uk/q3coding/Guided%20Rockets%20and%20Client%20Prediction.htm
-	if(self->client) // and we want the missile to be guided
+	// UNLOX - Guided missile: save missile entityid in player->otherEntityNum
+	// UNLOX - warheads
+	if(self->client)
 	{
-		bolt->think = Guided_Missile_Think;
-		bolt->nextthink = level.time + FRAMETIME;
+		bolt->warhead = self->client->warhead;
+		if(self->client->guidedmissile) {
+			bolt->think = Guided_Missile_Think;
+			bolt->nextthink = level.time + FRAMETIME;
+			self->client->ps.generic1 = bolt->s.number;
+		}
 	}
 	// END UNLOX
 	

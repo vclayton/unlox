@@ -813,6 +813,8 @@ void ClearRegisteredItems( void ) {
 	// UNLOX - Willi - Grappling Hook
 	RegisterItem( BG_FindItemForWeapon( WP_LIGHTNING ) );
 	RegisterItem( BG_FindItemForWeapon( WP_GRAPPLING_HOOK ) );
+	// UNLOX - For cluster grenade warheads
+	RegisterItem( BG_FindItemForWeapon( WP_GRENADE_LAUNCHER ) );
 	// END UNLOX
 }
 

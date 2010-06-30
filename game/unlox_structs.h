@@ -1,3 +1,9 @@
+typedef enum {
+	WH_ROCKET,
+	WH_CLUSTER,
+} warhead_t;
+
+
 typedef struct grapplestuff_s {
 	unsigned int damage;
 	unsigned int teamdamage;
