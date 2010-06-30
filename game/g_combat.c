@@ -527,6 +527,11 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 				// also play humiliation on target
 				self->client->ps.persistant[PERS_PLAYEREVENTS] ^= PLAYEREVENT_GAUNTLETREWARD;
+				
+				// UNLOX - And do the "Toasty!"
+				attacker->client->ps.persistant[PERS_PLAYEREVENTS] ^= PLAYEREVENT_TOASTY;
+				self->client->ps.persistant[PERS_PLAYEREVENTS] ^= PLAYEREVENT_TOASTY;
+				// END UNLOX
 			}
 
 			// check for two kills in a short amount of time

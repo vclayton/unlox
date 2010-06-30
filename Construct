@@ -27,7 +27,7 @@ $do_authport = 0;
 $do_setup = 0;
 $do_bspc = 0;
 $do_sdk = 0;
-$do_pk3 = 0;
+$do_pk3 = 1;
 # those are exported
 $DO_WIN32 = 0;
 $NO_VM = 0;

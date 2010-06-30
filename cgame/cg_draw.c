@@ -1517,8 +1517,14 @@ static void CG_DrawReward( void ) {
 	if ( !cg_drawRewards.integer ) {
 		return;
 	}
-
-	color = CG_FadeColor( cg.rewardTime, REWARD_TIME );
+	
+	// UNLOX - Toasty goes faster than normal rewards
+	if(cg.rewardCount[0] == -1) {
+		color = CG_FadeColor( cg.rewardTime, 700 );
+	} else {
+		color = CG_FadeColor( cg.rewardTime, REWARD_TIME );
+	}
+	// END UNLOX
 	if ( !color ) {
 		if (cg.rewardStack > 0) {
 			for(i = 0; i < cg.rewardStack; i++) {
@@ -1561,6 +1567,13 @@ static void CG_DrawReward( void ) {
 		CG_DrawStringExt( x, y+ICON_SIZE, buf, color, qfalse, qtrue,
 								SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT, 0 );
 	}
+	// UNLOX - Toasty!
+	else if(cg.rewardCount[0] == -1) { // Magic "Toasty" count
+		y = SCREEN_HEIGHT-95;
+		x = 640-97;
+		CG_DrawPic( x, y, 97, 95, cg.rewardShader[0] );
+	}
+	// END UNLOX
 	else {
 
 		count = cg.rewardCount[0];
@@ -2516,6 +2529,12 @@ static void CG_Draw2D( void ) {
 		return;
 	}
 */
+
+#ifndef MISSIONPACK
+	CG_DrawLowerRight();
+	CG_DrawLowerLeft();
+#endif
+
 	if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR ) {
 		CG_DrawSpectator();
 		CG_DrawCrosshair();
@@ -2568,11 +2587,6 @@ static void CG_Draw2D( void ) {
 	}
 #else
 	CG_DrawUpperRight();
-#endif
-
-#ifndef MISSIONPACK
-	CG_DrawLowerRight();
-	CG_DrawLowerLeft();
 #endif
 
 	if ( !CG_DrawFollow() ) {

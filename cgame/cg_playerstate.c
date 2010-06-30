@@ -370,20 +370,6 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 		reward = qtrue;
 		//Com_Printf("excellent\n");
 	}
-	if (ps->persistant[PERS_GAUNTLET_FRAG_COUNT] != ops->persistant[PERS_GAUNTLET_FRAG_COUNT]) {
-#ifdef MISSIONPACK
-		if (ops->persistant[PERS_GAUNTLET_FRAG_COUNT] == 1) {
-			sfx = cgs.media.firstHumiliationSound;
-		} else {
-			sfx = cgs.media.humiliationSound;
-		}
-#else
-		sfx = cgs.media.humiliationSound;
-#endif
-		pushReward(sfx, cgs.media.medalGauntlet, ps->persistant[PERS_GAUNTLET_FRAG_COUNT]);
-		reward = qtrue;
-		//Com_Printf("guantlet frag\n");
-	}
 	if (ps->persistant[PERS_DEFEND_COUNT] != ops->persistant[PERS_DEFEND_COUNT]) {
 		pushReward(cgs.media.defendSound, cgs.media.medalDefend, ps->persistant[PERS_DEFEND_COUNT]);
 		reward = qtrue;
@@ -408,8 +394,28 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 				(ops->persistant[PERS_PLAYEREVENTS] & PLAYEREVENT_HOLYSHIT)) {
 			trap_S_StartLocalSound( cgs.media.holyShitSound, CHAN_ANNOUNCER );
 		}
+		else if ((ps->persistant[PERS_PLAYEREVENTS] & PLAYEREVENT_TOASTY) !=
+				(ops->persistant[PERS_PLAYEREVENTS] & PLAYEREVENT_TOASTY)) {
+			pushReward(cgs.media.toastySound, cgs.media.toastyImage, -1); // The -1 is the magic Toasty ID
+		}
 		reward = qtrue;
 	}
+	// UNLOX - Moved this check after the playerstate checks, so the Toasty comes first
+	if (ps->persistant[PERS_GAUNTLET_FRAG_COUNT] != ops->persistant[PERS_GAUNTLET_FRAG_COUNT]) {
+#ifdef MISSIONPACK
+		if (ops->persistant[PERS_GAUNTLET_FRAG_COUNT] == 1) {
+			sfx = cgs.media.firstHumiliationSound;
+		} else {
+			sfx = cgs.media.humiliationSound;
+		}
+#else
+		sfx = cgs.media.humiliationSound;
+#endif
+		pushReward(sfx, cgs.media.medalGauntlet, ps->persistant[PERS_GAUNTLET_FRAG_COUNT]);
+		reward = qtrue;
+		//Com_Printf("guantlet frag\n");
+	}
+	// END UNLOX 
 
 	// check for flag pickup
 	if ( cgs.gametype >= GT_TEAM ) {

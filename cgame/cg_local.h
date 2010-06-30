@@ -977,7 +977,11 @@ typedef struct {
 	sfxHandle_t	wstbimpmSound;
 	sfxHandle_t	wstbimpdSound;
 	sfxHandle_t	wstbactvSound;
-
+	
+	// UNLOX - "Toasty!"
+	qhandle_t	toastyImage;
+	sfxHandle_t	toastySound;
+	// END UNLOX
 } cgMedia_t;
 
 

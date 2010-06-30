@@ -792,7 +792,10 @@ static void CG_RegisterSounds( void ) {
 	trap_S_RegisterSound("sound/player/janet/fall1.wav", qfalse );
 	trap_S_RegisterSound("sound/player/janet/taunt.wav", qfalse );
 #endif
-
+	
+	// UNLOX - "Toasty!"
+	cgs.media.toastySound = trap_S_RegisterSound("sound/toasty.wav", qfalse);
+	// END UNLOX
 }
 
 
@@ -1091,6 +1094,11 @@ static void CG_RegisterGraphics( void ) {
 	trap_R_RegisterModel( "models/players/heads/janet/janet.md3" );
 
 #endif
+	
+	// UNLOX - "Toasty!"
+	cgs.media.toastyImage = trap_R_RegisterShaderNoMip( "gfx/toasty.tga" );
+	// END UNLOX
+	
 	CG_ClearParticles ();
 /*
 	for (i=1; i<MAX_PARTICLES_AREAS; i++)
