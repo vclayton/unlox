@@ -1645,6 +1645,34 @@ void Cmd_GuidedMissile_f( gentity_t *ent ) {
 }
 // END UNLOX
 
+// UNLOX - Turret: Taken from http://www.quake3hut.co.uk/q3coding/Turrets%20Part%201.htm
+/*
+=================
+Cmd_SpawnTurret_f
+=================
+*/
+void Cmd_SpawnTurret_f( gentity_t *ent ) {
+	gentity_t *turret; 	// The object to hold the turrets details.
+	
+	turret = G_Spawn();
+	turret->parent = ent;
+	turret->eventTime = 200; // makes the firing sequence go away after 200 milliseconds.
+	turret->s.weapon = WP_PLASMAGUN; // which weapon will be fired (graphics only)
+	turret->classname = "turret";	// not really needed yet. it may be later.
+	turret->s.modelindex = G_ModelIndex("models/weapons2/machinegun/machinegun.md3");
+	turret->model = "models/weapons2/machinegun/machinegun.md3";
+	turret->s.modelindex2 = G_ModelIndex("models/weapons2/machinegun/machinegun.md3");
+// the three lines above set the model to be displayed. currently its just the machinegun.
+	VectorSet( turret->r.mins, -15, -15, -15 );
+	VectorSet( turret->r.maxs, 30, 30, 30);
+// these two lines set the size of the turret. doesn't do anything as the turret is not solid, but this will change
+	turret->think = turret_think; // what the turret does
+	turret->nextthink = level.time+100; // when the turret will activate
+	G_SetOrigin( turret, ent->client->ps.origin ); // sets where the turret is
+	trap_LinkEntity (turret); // adds the finalized turret.
+
+}
+
 
 /*
 =================
@@ -1758,6 +1786,9 @@ void ClientCommand( int clientNum ) {
 	// UNLOX - Toggle guided missiles
 	else if (Q_stricmp (cmd, "guidedmissile") == 0)
 		Cmd_GuidedMissile_f (ent); 
+	// UNLOX - Spawn turret
+	else if (Q_stricmp (cmd, "spawnturret") == 0)
+		Cmd_SpawnTurret_f (ent); 
 	// END UNLOX
 	else
 		trap_SendServerCommand( clientNum, va("print \"unknown cmd %s\n\"", cmd ) );

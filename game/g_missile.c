@@ -96,8 +96,10 @@ void G_ExplodeMissile( gentity_t *ent ) {
 	Warhead_Explode( ent );
 	// END UNLOX
 	
-	// UNLOX - Turn off missilecam
-	ent->parent->client->ps.generic1 = 0;
+	// UNLOX - Turn off missilecam if this was our missile
+	if ( ent->parent->client->ps.generic1 == ent->s.number ) {
+		ent->parent->client->ps.generic1 = 0;
+	}
 	// END UNLOX
 	
 	trap_LinkEntity( ent );
@@ -452,8 +454,10 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 	Warhead_Explode( ent );
 	// END UNLOX
 	
-	// UNLOX - Reset missilecam
-	ent->parent->client->ps.generic1 = 0;
+	// UNLOX - Reset missilecam if this was our cam missile
+	if ( ent->parent->client->ps.generic1 == ent->s.number ) {
+		ent->parent->client->ps.generic1 = 0;
+	}
 	// END UNLOX
 
 	trap_LinkEntity( ent );
@@ -480,6 +484,14 @@ void Guided_Missile_Think (gentity_t *missile)
 	if (!player)
 	{
 		G_Printf ("Guided_Missile_Think : missile has no owner!\n");
+		return;
+	}
+	
+	// If a guided missile isn't being guided, self destruct
+	if(player->client->ps.generic1 != missile->s.number) {
+		G_Printf ("Guided_Missile_Think : missile has no guidance!\n");
+		missile->think = G_ExplodeMissile;
+		missile->nextthink = level.time + FRAMETIME; 
 		return;
 	}
 	
@@ -578,8 +590,10 @@ void G_RunMissile( gentity_t *ent ) {
 			if (ent->parent && ent->parent->client && ent->parent->client->hook == ent) {
 				ent->parent->client->hook = NULL;
 			}
-			// UNLOX - Reset missilecam
-			ent->parent->client->ps.generic1 = 0;
+			// UNLOX - Reset missilecam if this was the cam missile
+			if ( ent->parent->client->ps.generic1 == ent->s.number ) {
+				ent->parent->client->ps.generic1 = 0;
+			}
 			// END UNLOX
 			G_FreeEntity( ent );
 			return;
@@ -763,7 +777,7 @@ gentity_t *fire_rocket (gentity_t *self, vec3_t start, vec3_t dir) {
 	if(self->client)
 	{
 		bolt->warhead = self->client->warhead;
-		if(self->client->guidedmissile) {
+		if(self->client->guidedmissile && !self->client->ps.generic1) {
 			bolt->think = Guided_Missile_Think;
 			bolt->nextthink = level.time + FRAMETIME;
 			self->client->ps.generic1 = bolt->s.number;

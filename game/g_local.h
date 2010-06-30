@@ -26,7 +26,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "bg_public.h"
 #include "g_public.h"
 
-#include "unlox.h"
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
@@ -983,3 +982,5 @@ int		trap_GeneticParentsAndChildSelection(int numranks, float *ranks, int *paren
 
 void	trap_SnapVector( float *v );
 
+
+#include "unlox.h"
