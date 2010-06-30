@@ -854,6 +854,10 @@ void ClearRegisteredItems( void ) {
 	RegisterItem( BG_FindItemForWeapon( WP_GRENADE_LAUNCHER ) );
 	// UNLOX - For railbomb warheads
 	RegisterItem( BG_FindItemForWeapon( WP_RAILGUN ) );
+	// UNLOX - For plasma warheads
+	RegisterItem( BG_FindItemForWeapon( WP_PLASMAGUN ) );
+	// UNLOX - For bfg warheads
+	RegisterItem( BG_FindItemForWeapon( WP_BFG ) );
 	// END UNLOX
 }
 

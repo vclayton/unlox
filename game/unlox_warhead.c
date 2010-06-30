@@ -113,6 +113,23 @@ void Warhead_Plasma( gentity_t *ent )
 	}
 }
 
+void Warhead_Bfg( gentity_t *ent )
+{
+	vec3_t angles, fwd, origin;
+	int x;
+	
+	VectorSet( angles, 0.0, 0.0, 0.0 );
+	VectorCopy( ent->r.currentOrigin, origin );
+	origin[2] += 5; // Add 5 to Z axis to prevent spawning in the ground
+	
+	for(x=0; x<360; x+=30) {
+		angles[YAW] = x;
+		angles[PITCH] = random() * 30.0f - 15.0f;
+		AngleVectors( angles, fwd, NULL, NULL );
+		fire_bfg( ent->parent, origin, fwd );
+	}
+}
+
 
 void Warhead_Explode( gentity_t *ent )
 {
@@ -133,6 +150,9 @@ void Warhead_Explode( gentity_t *ent )
 			break;
 		case WH_PLASMA:
 			Warhead_Plasma( ent );
+			break;
+		case WH_BFG:
+			Warhead_Bfg( ent );
 			break;
 		default:
 			trap_SendServerCommand( ent->r.ownerNum, va("print \"Unknown warhead type %d\n\"", ent->warhead));
