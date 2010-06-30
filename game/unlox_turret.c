@@ -1,5 +1,7 @@
 #include "g_local.h"
 
+void G_ExplodeMissile( gentity_t *ent );
+
 // All originally taken from http://www.quake3hut.co.uk/q3coding/Turrets%20Part%201.htm
 // Cleaned up some and modified some
 
@@ -88,9 +90,12 @@ ent->count is there to stop the gun firing as fast as the turret thinks. decreas
 this function will be refined in a later tutorial
 */
 void turret_fireonenemy( gentity_t *ent ) {
-	vec3_t forward, right, up;
+	vec3_t forward, right, up, origin;
 	AngleVectors( ent->s.apos.trBase, forward, right, up );
-	fire_plasma( ent->parent, ent->r.currentOrigin, forward );
+	// Offset firing so we don't hit ourself
+	VectorNormalize(forward);
+	VectorMA( ent->r.currentOrigin, 15, forward, origin );
+	fire_plasma( ent->parent, origin, forward );
 	G_AddEvent( ent, EV_FIRE_WEAPON, 0 );
 	ent->count=level.time+200;
 }
@@ -132,7 +137,52 @@ void turret_think( gentity_t *ent ) {
 		turret_fireonenemy(ent);
 }
 
+/*
+================
+G_MissileDie
 
+Lancer - Destroy a missile
+================
+*/
+void turret_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int mod ) {
+	if (inflictor == self)
+		return;
+	self->takedamage = qfalse;
+	self->think = G_ExplodeMissile;
+	self->nextthink = level.time + 10;
+}
+
+void turret_spawn( gentity_t *ent ) {
+	gentity_t *turret; 	// The object to hold the turrets details.
+	
+	turret = G_Spawn();
+	turret->parent = ent;
+	turret->eventTime = 200; // makes the firing sequence go away after 200 milliseconds.
+	turret->s.weapon = WP_PLASMAGUN; // which weapon will be fired (graphics only)
+	turret->classname = "turret";	// not really needed yet. it may be later.
+	turret->s.modelindex = G_ModelIndex("models/weapons2/rocketl/rocketl.md3");
+	turret->model = "models/weapons2/rocketl/rocketl.md3";
+	turret->s.modelindex2 = G_ModelIndex("models/weapons2/rocketl/rocketl.md3");
+// the three lines above set the model to be displayed. currently its just the machinegun.
+	VectorSet( turret->r.mins, -15, -15, -15 );
+	VectorSet( turret->r.maxs, 30, 30, 30);
+// these two lines set the size of the turret. doesn't do anything as the turret is not solid, but this will change
+	turret->think = turret_think; // what the turret does
+	turret->nextthink = level.time+100; // when the turret will activate
+	G_SetOrigin( turret, ent->client->ps.origin ); // sets where the turret is
+	
+	// Make it destroyable
+	turret->health = 25;
+	turret->takedamage = qtrue;
+	turret->die = turret_die;
+	turret->r.contents = CONTENTS_CORPSE;
+	// Set bounding box
+	VectorSet(turret->r.mins, -10, -3, 0);
+	VectorSet(turret->r.maxs, 10, 3, 6);
+	VectorCopy(turret->r.mins, turret->r.absmin);
+	VectorCopy(turret->r.maxs, turret->r.absmax);	
+	trap_LinkEntity (turret); // adds the finalized turret.
+}
 
 // (NOBODY): Code helper function
 // Returns qtrue/qfalse if there's nothing between ent1 and ent2

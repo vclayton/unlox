@@ -183,8 +183,10 @@ void Bullet_Fire (gentity_t *ent, float spread, int damage ) {
 
 	passent = ent->s.number;
 	for (i = 0; i < 10; i++) {
-
-		trap_Trace (&tr, muzzle, NULL, NULL, end, passent, MASK_SHOT);
+		// UNLOX - Destroyable turrets require us to be able to hit our own stuff
+		//trap_Trace (&tr, muzzle, NULL, NULL, end, passent, MASK_SHOT);
+		trap_Trace (&tr, muzzle, NULL, NULL, end, ENTITYNUM_NONE, MASK_SHOT);
+		// END UNLOX
 		if ( tr.surfaceFlags & SURF_NOIMPACT ) {
 			return;
 		}

@@ -1652,25 +1652,7 @@ Cmd_SpawnTurret_f
 =================
 */
 void Cmd_SpawnTurret_f( gentity_t *ent ) {
-	gentity_t *turret; 	// The object to hold the turrets details.
-	
-	turret = G_Spawn();
-	turret->parent = ent;
-	turret->eventTime = 200; // makes the firing sequence go away after 200 milliseconds.
-	turret->s.weapon = WP_PLASMAGUN; // which weapon will be fired (graphics only)
-	turret->classname = "turret";	// not really needed yet. it may be later.
-	turret->s.modelindex = G_ModelIndex("models/weapons2/rocketl/rocketl.md3");
-	turret->model = "models/weapons2/rocketl/rocketl.md3";
-	turret->s.modelindex2 = G_ModelIndex("models/weapons2/rocketl/rocketl.md3");
-// the three lines above set the model to be displayed. currently its just the machinegun.
-	VectorSet( turret->r.mins, -15, -15, -15 );
-	VectorSet( turret->r.maxs, 30, 30, 30);
-// these two lines set the size of the turret. doesn't do anything as the turret is not solid, but this will change
-	turret->think = turret_think; // what the turret does
-	turret->nextthink = level.time+100; // when the turret will activate
-	G_SetOrigin( turret, ent->client->ps.origin ); // sets where the turret is
-	trap_LinkEntity (turret); // adds the finalized turret.
-
+	turret_spawn( ent );
 }
 
 

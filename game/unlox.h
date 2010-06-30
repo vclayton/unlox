@@ -28,4 +28,6 @@ typedef struct grapplestuff_s {
 
 extern grapplestuff_t grapple;
 
+qboolean visible( gentity_t *ent1, gentity_t *ent2 );
 void turret_think( gentity_t *ent );
+void turret_spawn( gentity_t *ent );
