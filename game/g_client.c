@@ -314,6 +314,79 @@ gentity_t *SelectSpectatorSpawnPoint( vec3_t origin, vec3_t angles ) {
 	return NULL;
 }
 
+// UNLOX - space protection (from corkscrew Mod)
+/*
+===========
+SelectNearestSpawnPoint
+
+for teleporting you back after falling into the void
+============
+*/
+gentity_t *SelectNearestSpawnPoint ( vec3_t Point, vec3_t origin, vec3_t angles ) {
+	gentity_t *spot;
+	vec3_t    delta;
+	float     dist, nearestDist;
+	gentity_t *nearestSpot;
+	
+	nearestDist = 999999;
+	nearestSpot = NULL;
+	spot = NULL;
+	
+	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL) {
+		VectorSubtract( spot->s.origin, Point, delta );
+		dist = VectorLength( delta );
+		if ( dist < nearestDist ) {
+			nearestDist = dist;
+			nearestSpot = spot;
+		}
+	}
+	while ((spot = G_Find (spot, FOFS(classname), "team_CTF_redplayer")) != NULL) {
+		VectorSubtract( spot->s.origin, Point, delta );
+		dist = VectorLength( delta );
+		if ( dist < nearestDist ) {
+			nearestDist = dist;
+			nearestSpot = spot;
+		}
+	}
+	while ((spot = G_Find (spot, FOFS(classname), "team_CTF_blueplayer")) != NULL) {
+		VectorSubtract( spot->s.origin, Point, delta );
+		dist = VectorLength( delta );
+		if ( dist < nearestDist ) {
+			nearestDist = dist;
+			nearestSpot = spot;
+		}
+	}
+	
+	while ((spot = G_Find (spot, FOFS(classname), "team_CTF_redspawn")) != NULL) {
+		VectorSubtract( spot->s.origin, Point, delta );
+		dist = VectorLength( delta );
+		if ( dist < nearestDist ) {
+			nearestDist = dist;
+			nearestSpot = spot;
+		}
+	}
+	while ((spot = G_Find (spot, FOFS(classname), "team_CTF_bluespawn")) != NULL) {
+		VectorSubtract( spot->s.origin, Point, delta );
+		dist = VectorLength( delta );
+		if ( dist < nearestDist ) {
+			nearestDist = dist;
+			nearestSpot = spot;
+		}
+	}
+	
+	// find a single player start spot
+	if (!nearestSpot) {
+		G_Error( "Couldn't find a spawn point" );
+	}
+	
+	VectorCopy (nearestSpot->s.origin, origin);
+	origin[2] += 9;
+	VectorCopy (nearestSpot->s.angles, angles);
+	
+	return nearestSpot;
+}
+// END UNLOX
+
 /*
 =======================================================================
 

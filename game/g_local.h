@@ -714,6 +714,9 @@ extern	gentity_t		g_entities[MAX_GENTITIES];
 
 #define	FOFS(x) ((int)&(((gentity_t *)0)->x))
 
+// UNLOX - space protection (From corkscrew mod)
+extern	vmCvar_t	g_spaceProtection;
+// END UNLOX
 extern	vmCvar_t	g_gametype;
 extern	vmCvar_t	g_dedicated;
 extern	vmCvar_t	g_cheats;

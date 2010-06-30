@@ -353,26 +353,59 @@ void hurt_use( gentity_t *self, gentity_t *other, gentity_t *activator ) {
 
 void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace ) {
 	int		dflags;
-
+	// UNLOX - space protection
+	vec3_t  origin, angles;
+	// END UNLOX
+	
 	if ( !other->takedamage ) {
 		return;
 	}
-
+	
 	if ( self->timestamp > level.time ) {
 		return;
 	}
-
+	
+	// UNLOX - space protection (From corkscrew mod)
+	if ( g_spaceProtection.integer && self->damage > 100) {
+//		item = NULL;
+		
+		// Lose the flag
+// 		if ( other->client->ps.powerups[ PW_REDFLAG ] ) {
+// 			item = BG_FindItemForPowerup( PW_REDFLAG );
+// 			i = PW_REDFLAG;
+// 		} else if ( other->client->ps.powerups[ PW_BLUEFLAG ] ) {
+// 			item = BG_FindItemForPowerup( PW_BLUEFLAG );
+// 			i = PW_BLUEFLAG;
+// 		}
+		
+// 		if ( item ) {
+// 			drop = Drop_Item( other, item, 0 );
+// 			// decide how many seconds it has left
+// 			drop->count = ( other->client->ps.powerups[ i ] - level.time ) / 1000;
+// 			if ( drop->count < 1 ) {
+// 				drop->count = 1;
+// 			}
+// 			other->client->ps.powerups[ i ] = 0;
+// 		}
+		
+		SelectNearestSpawnPoint( other->client->ps.origin, origin, angles );
+		TeleportPlayer( other, origin, angles );
+		return;
+	}
+	// END UNLOX
+	
+	
 	if ( self->spawnflags & 16 ) {
 		self->timestamp = level.time + 1000;
 	} else {
 		self->timestamp = level.time + FRAMETIME;
 	}
-
+	
 	// play sound
 	if ( !(self->spawnflags & 4) ) {
 		G_Sound( other, CHAN_AUTO, self->noise_index );
 	}
-
+	
 	if (self->spawnflags & 8)
 		dflags = DAMAGE_NO_PROTECTION;
 	else

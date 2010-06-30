@@ -38,6 +38,9 @@ typedef struct {
 gentity_t		g_entities[MAX_GENTITIES];
 gclient_t		g_clients[MAX_CLIENTS];
 
+// UNLOX - space protection (From corkscrew mod)
+vmCvar_t	g_spaceProtection;
+// END UNLOX
 vmCvar_t	g_gametype;
 vmCvar_t	g_dmflags;
 vmCvar_t	g_fraglimit;
@@ -97,6 +100,10 @@ vmCvar_t	g_proxMineTimeout;
 
 // bk001129 - made static to avoid aliasing
 static cvarTable_t		gameCvarTable[] = {
+	// UNLOX - space protection (from corkscrew mod)
+	{ &g_spaceProtection, "g_spaceProtection", "1", 0, 0, qtrue  },
+	// END UNLOX
+	
 	// don't override the cheat state set by the system
 	{ &g_cheats, "sv_cheats", "", 0, 0, qfalse },
 
