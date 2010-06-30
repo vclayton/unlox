@@ -50,7 +50,7 @@ void turret_findenemy( gentity_t *ent ) {
 			eorg[j] = org[j] - (target->r.currentOrigin[j] + (target->r.mins[j] + target->r.maxs[j])*0.5);
 		if (VectorLength(eorg) > rad)
 			continue;
-		if(!target->client)
+		if(!target->client) // Only target players
 			continue;
 		ent->enemy=target;
 		return;
@@ -72,7 +72,6 @@ void turret_trackenemy( gentity_t *ent ) {
 	
 	VectorSubtract(ent->enemy->r.currentOrigin,ent->r.currentOrigin,dir);
 	VectorNormalize(dir);
-	VectorCopy(dir,ent->s.origin);
 	vectoangles(dir,dir);
 	VectorCopy( dir,ent->s.apos.trBase );
 	trap_LinkEntity (ent);
@@ -89,7 +88,9 @@ ent->count is there to stop the gun firing as fast as the turret thinks. decreas
 this function will be refined in a later tutorial
 */
 void turret_fireonenemy( gentity_t *ent ) {
-	fire_plasma( ent->parent, ent->r.currentOrigin, ent->s.apos.trBase );
+	vec3_t forward, right, up;
+	AngleVectors( ent->s.apos.trBase, forward, right, up );
+	fire_plasma( ent->parent, ent->r.currentOrigin, forward );
 	G_AddEvent( ent, EV_FIRE_WEAPON, 0 );
 	ent->count=level.time+200;
 }
@@ -127,6 +128,20 @@ void turret_think( gentity_t *ent ) {
 		return;
 	
 	turret_trackenemy(ent);
-	if (ent->count<level.time)
-	turret_fireonenemy(ent);
+	if (ent->count<level.time && visible(ent, ent->enemy))
+		turret_fireonenemy(ent);
+}
+
+
+
+// (NOBODY): Code helper function
+// Returns qtrue/qfalse if there's nothing between ent1 and ent2
+qboolean visible( gentity_t *ent1, gentity_t *ent2 ) {
+	trace_t  trace;
+	
+	trap_Trace (&trace, ent1->s.pos.trBase, NULL, NULL, ent2->s.pos.trBase, ent1->s.number, MASK_SHOT );
+	if ( trace.contents & CONTENTS_SOLID ) {
+		return qfalse;
+	}
+	return qtrue;
 }

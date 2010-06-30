@@ -1659,9 +1659,9 @@ void Cmd_SpawnTurret_f( gentity_t *ent ) {
 	turret->eventTime = 200; // makes the firing sequence go away after 200 milliseconds.
 	turret->s.weapon = WP_PLASMAGUN; // which weapon will be fired (graphics only)
 	turret->classname = "turret";	// not really needed yet. it may be later.
-	turret->s.modelindex = G_ModelIndex("models/weapons2/machinegun/machinegun.md3");
-	turret->model = "models/weapons2/machinegun/machinegun.md3";
-	turret->s.modelindex2 = G_ModelIndex("models/weapons2/machinegun/machinegun.md3");
+	turret->s.modelindex = G_ModelIndex("models/weapons2/rocketl/rocketl.md3");
+	turret->model = "models/weapons2/rocketl/rocketl.md3";
+	turret->s.modelindex2 = G_ModelIndex("models/weapons2/rocketl/rocketl.md3");
 // the three lines above set the model to be displayed. currently its just the machinegun.
 	VectorSet( turret->r.mins, -15, -15, -15 );
 	VectorSet( turret->r.maxs, 30, 30, 30);
