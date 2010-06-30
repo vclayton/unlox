@@ -35,6 +35,10 @@ static	vec3_t	muzzle;
 
 #define NUM_NAILSHOTS 15
 
+// UNLOX Forward declaration for shotrail
+void weapon_railgun_fire (gentity_t *ent);
+// END UNLOX
+
 /*
 ================
 G_BounceProjectile
@@ -325,19 +329,19 @@ qboolean ShotgunPellet( vec3_t start, vec3_t end, gentity_t *ent ) {
 }
 
 // this should match CG_ShotgunPattern
-void ShotgunPattern( vec3_t origin, vec3_t origin2, int seed, gentity_t *ent ) {
+void ShotgunPattern( vec3_t origin, vec3_t origin2, int seed, gentity_t *ent, int shotType ) {
 	int			i;
 	float		r, u;
 	vec3_t		end;
-	vec3_t		forward, right, up;
+	vec3_t		localforward, localright, localup;
 	int			oldScore;
 	qboolean	hitClient = qfalse;
 
 	// derive the right and up vectors from the forward vector, because
 	// the client won't have any other information
-	VectorNormalize2( origin2, forward );
-	PerpendicularVector( right, forward );
-	CrossProduct( forward, right, up );
+	VectorNormalize2( origin2, localforward );
+	PerpendicularVector( localright, localforward );
+	CrossProduct( localforward, localright, localup );
 
 	oldScore = ent->client->ps.persistant[PERS_SCORE];
 
@@ -345,18 +349,31 @@ void ShotgunPattern( vec3_t origin, vec3_t origin2, int seed, gentity_t *ent ) {
 	for ( i = 0 ; i < DEFAULT_SHOTGUN_COUNT ; i++ ) {
 		r = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD * 16;
 		u = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD * 16;
-		VectorMA( origin, 8192 * 16, forward, end);
-		VectorMA (end, r, right, end);
-		VectorMA (end, u, up, end);
-		if( ShotgunPellet( origin, end, ent ) && !hitClient ) {
-			hitClient = qtrue;
-			ent->client->accuracy_hits++;
+		VectorMA( origin, 8192 * 16, localforward, end);
+		VectorMA (end, r, localright, end);
+		VectorMA (end, u, localup, end);
+		// UNLOX - Rail Shotgun
+		if(shotType == WP_SHOTGUN) {
+			if( ShotgunPellet( origin, end, ent ) && !hitClient ) {
+				hitClient = qtrue;
+				ent->client->accuracy_hits++;
+			}
+		} else if(shotType == WP_SHOTRAIL) {
+			VectorCopy(end, forward);
+			weapon_railgun_fire( ent );
+			VectorCopy(localforward, forward);
+		} else if(shotType == WP_SHOTGRENADE) {
+			VectorCopy(end, forward);
+			fire_grenade(ent, muzzle, end);
+		} else if(shotType == WP_SHOTPLASMA) {
+			VectorCopy(end, forward);
+			fire_plasma(ent, muzzle, end);
 		}
 	}
 }
 
 
-void weapon_supershotgun_fire (gentity_t *ent) {
+void weapon_supershotgun_fire (gentity_t *ent, int shotType) {
 	gentity_t		*tent;
 
 	// send shotgun blast
@@ -366,7 +383,7 @@ void weapon_supershotgun_fire (gentity_t *ent) {
 	tent->s.eventParm = rand() & 255;		// seed for spread pattern
 	tent->s.otherEntityNum = ent->s.number;
 
-	ShotgunPattern( tent->s.pos.trBase, tent->s.origin2, tent->s.eventParm, ent );
+	ShotgunPattern( tent->s.pos.trBase, tent->s.origin2, tent->s.eventParm, ent, shotType );
 }
 
 
@@ -457,6 +474,10 @@ void weapon_railgun_fire (gentity_t *ent) {
 	int			hits;
 	int			unlinked;
 	int			passent;
+	// UNLOX - Rubber rail
+	int		bounces;
+	vec3_t		origMuzzle;
+	// END UNLOX
 	gentity_t	*unlinkedEntities[MAX_RAIL_HITS];
 
 	damage = 100 * s_quadFactor;
@@ -466,7 +487,15 @@ void weapon_railgun_fire (gentity_t *ent) {
 	// trace only against the solids, so the railgun will go through people
 	unlinked = 0;
 	hits = 0;
-	passent = ent->s.number;
+	// UNLOX
+	passent = ENTITYNUM_NONE; // ent->s.number; // Yes, you can kill yourself
+	VectorCopy( muzzle, origMuzzle); // Save for later (to not screw up shotrail)
+	bounces = 1; // The initial shot counts as 1 bounce
+	if(ent->client->rubbergun) {
+		bounces = MAX_RAIL_BOUNCE;
+	}
+	for(; bounces>0; bounces--) {
+	// END UNLOX
 	do {
 		trap_Trace (&trace, muzzle, NULL, NULL, end, passent, MASK_SHOT );
 		if ( trace.entityNum >= ENTITYNUM_MAX_NORMAL ) {
@@ -540,6 +569,9 @@ void weapon_railgun_fire (gentity_t *ent) {
 
 	// no explosion at end if SURF_NOIMPACT, but still make the trail
 	if ( trace.surfaceFlags & SURF_NOIMPACT ) {
+		// UNLOX
+		bounces = 0;
+		// END UNLOX
 		tent->s.eventParm = 255;	// don't make the explosion at the end
 	} else {
 		tent->s.eventParm = DirToByte( trace.plane.normal );
@@ -563,7 +595,12 @@ void weapon_railgun_fire (gentity_t *ent) {
 		}
 		ent->client->accuracy_hits++;
 	}
-
+	// UNLOX - rail bounce from http://www.quake3hut.co.uk/q3coding/bouncy%20rail.htm
+	G_BounceProjectile( muzzle , trace.endpos , trace.plane.normal, end); //This sets the new angles for the bounce
+	VectorCopy (trace.endpos , muzzle); //copy the end position as the new muzzle
+	}
+	VectorCopy( origMuzzle, muzzle ); // Restore orig muzzle to not screw up shotrail
+	// END UNLOX
 }
 
 
@@ -623,21 +660,22 @@ LIGHTNING GUN
 void Weapon_LightningFire( gentity_t *ent ) {
 	trace_t		tr;
 	vec3_t		end;
-#ifdef MISSIONPACK
 	vec3_t impactpoint, bouncedir;
-#endif
 	gentity_t	*traceEnt, *tent;
 	int			damage, i, passent;
-
+	// UNLOX
+	vec3_t		origMuzzle;
+	// END UNLOX
+	
 	damage = 8 * s_quadFactor;
-
-	passent = ent->s.number;
+	VectorCopy( muzzle, origMuzzle); // Save for later (to not screw up shotlightning)
+	
+	passent = ent->client->rubbergun ? ENTITYNUM_NONE : ent->s.number;
 	for (i = 0; i < 10; i++) {
 		VectorMA( muzzle, LIGHTNING_RANGE, forward, end );
 
 		trap_Trace( &tr, muzzle, NULL, NULL, end, passent, MASK_SHOT );
-
-#ifdef MISSIONPACK
+		
 		// if not the first trace (the lightning bounced of an invulnerability sphere)
 		if (i) {
 			// add bounced off lightning bolt temp entity
@@ -648,8 +686,8 @@ void Weapon_LightningFire( gentity_t *ent ) {
 			SnapVector( end );
 			VectorCopy( end, tent->s.origin2 );
 		}
-#endif
-		if ( tr.entityNum == ENTITYNUM_NONE ) {
+		
+		if ( tr.entityNum == ENTITYNUM_NONE && !ent->client->rubbergun) {
 			return;
 		}
 
@@ -694,9 +732,16 @@ void Weapon_LightningFire( gentity_t *ent ) {
 			tent = G_TempEntity( tr.endpos, EV_MISSILE_MISS );
 			tent->s.eventParm = DirToByte( tr.plane.normal );
 		}
-
-		break;
+		
+		// UNLOX 
+		if(!ent->client->rubbergun) {
+			break;
+		}
+//		G_BounceProjectile( muzzle, tr.endpos, bouncedir, end );
+		G_BounceProjectile( muzzle , tr.endpos , tr.plane.normal, end); //This sets the new angles for the bounce
+		VectorCopy (impactpoint, muzzle); //copy the end position as the new muzzle
 	}
+	VectorCopy( origMuzzle, muzzle ); // Restore orig muzzle to not screw up shotrail
 }
 
 #ifdef MISSIONPACK
@@ -868,7 +913,7 @@ void FireWeapon( gentity_t *ent ) {
 		Weapon_LightningFire( ent );
 		break;
 	case WP_SHOTGUN:
-		weapon_supershotgun_fire( ent );
+		weapon_supershotgun_fire( ent, WP_SHOTGUN );
 		break;
 	case WP_MACHINEGUN:
 		if ( g_gametype.integer != GT_TEAM ) {
@@ -906,6 +951,20 @@ void FireWeapon( gentity_t *ent ) {
 		Bullet_Fire( ent, CHAINGUN_SPREAD, MACHINEGUN_DAMAGE );
 		break;
 #endif
+// UNLOX
+	case WP_SHOTGRENADE:
+		weapon_supershotgun_fire( ent, WP_SHOTGRENADE );
+		break;
+	case WP_SHOTPLASMA:
+		weapon_supershotgun_fire( ent, WP_SHOTPLASMA );
+		break;
+	case WP_SHOTRAIL:
+		weapon_supershotgun_fire( ent, WP_SHOTRAIL );
+		break;
+	case WP_CHAINRAIL:
+		weapon_railgun_fire( ent );
+		break;
+// END UNLOX
 	default:
 // FIXME		G_Error( "Bad ent->s.weapon" );
 		break;

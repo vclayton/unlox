@@ -52,13 +52,14 @@ void CG_CheckAmmo( void ) {
 		case WP_GRENADE_LAUNCHER:
 		case WP_RAILGUN:
 		case WP_SHOTGUN:
+		case WP_SHOTRAIL:
 #ifdef MISSIONPACK
 		case WP_PROX_LAUNCHER:
 #endif
-			total += cg.snap->ps.ammo[i] * 1000;
+			total += cg.snap->ps.ammo[ammoType(i)] * 1000;
 			break;
 		default:
-			total += cg.snap->ps.ammo[i] * 200;
+			total += cg.snap->ps.ammo[ammoType(i)] * 200;
 			break;
 		}
 		if ( total >= 5000 ) {

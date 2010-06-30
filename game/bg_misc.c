@@ -916,6 +916,73 @@ Only in One Flag CTF games
 	},
 #endif
 
+// UNLOX - New weapons
+/*QUAKED ammo_slugs (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
+*/
+	{
+		"weapon_chainrail",
+		"sound/misc/w_pkup.wav",
+        { "models/weapons2/machinegun/machinegun.md3", 
+		0, 0, 0},
+/* icon */		"icons/iconw_railgun",
+/* pickup */	"ChainRail",
+		10,
+		IT_WEAPON,
+		WP_CHAINRAIL,
+/* precache */ "",
+/* sounds */ ""
+	},
+
+/*QUAKED ammo_grenades (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
+*/
+	{
+		"weapon_shotgrenade",
+		"sound/misc/w_pkup.wav",
+        { "models/weapons2/shotgun/shotgun.md3", 
+		0, 0, 0},
+/* icon */		"icons/iconw_grenade",
+/* pickup */	"ShotGrenade",
+		10,
+		IT_WEAPON,
+		WP_SHOTGRENADE,
+/* precache */ "",
+/* sounds */ ""
+	},
+
+/*QUAKED ammo_grenades (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
+*/
+	{
+		"weapon_shotplasma",
+		"sound/misc/w_pkup.wav",
+        { "models/weapons2/shotgun/shotgun.md3", 
+		0, 0, 0},
+/* icon */		"icons/iconw_plasma",
+/* pickup */	"ShotPlasma",
+		10,
+		IT_WEAPON,
+		WP_SHOTPLASMA,
+/* precache */ "",
+/* sounds */ ""
+	},
+
+/*QUAKED ammo_slugs (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
+*/
+	{
+		"weapon_shotrail",
+		"sound/misc/w_pkup.wav",
+        { "models/weapons2/shotgun/shotgun.md3", 
+		0, 0, 0},
+/* icon */		"icons/iconw_railgun",
+/* pickup */	"ShotRail",
+		10,
+		IT_WEAPON,
+		WP_SHOTRAIL,
+/* precache */ "",
+/* sounds */ ""
+	},
+
+// END UNLOX
+
 	// end of list marker
 	{NULL}
 };
@@ -1053,7 +1120,7 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 		return qtrue;	// weapons are always picked up
 
 	case IT_AMMO:
-		if ( ps->ammo[ item->giTag ] >= 200 ) {
+		if ( ps->ammo[ ammoType(item->giTag) ] >= 200 ) {
 			return qfalse;		// can't hold any more
 		}
 		return qtrue;

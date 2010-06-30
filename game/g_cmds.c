@@ -1634,7 +1634,7 @@ void Cmd_Warhead_f( gentity_t *ent ) {
 // UNLOX - Toggle guided missiles
 /*
 =================
-Cmd_Warhead_f
+Cmd_GuidedMissile_f
 =================
 */
 void Cmd_GuidedMissile_f( gentity_t *ent ) {
@@ -1661,6 +1661,25 @@ void Cmd_GuidedMissile_f( gentity_t *ent ) {
 	trap_SendServerCommand( ent-g_entities, 
 		va("print \"Guided missiles %s (speed=%f)\n\"", 
 			ent->client->guidedmissile ? "enabled" : "disabled", ent->client->pers.guidedspeed));
+	return;
+}
+// END UNLOX
+
+// UNLOX - Toggle rubber projectiles (bouncy!)
+/*
+=================
+Cmd_RubberGun_f
+=================
+*/
+void Cmd_RubberGun_f( gentity_t *ent ) {
+	float speed;
+	char		buffer[MAX_TOKEN_CHARS];
+	int			i;
+	
+	ent->client->rubbergun = !ent->client->rubbergun;
+	trap_SendServerCommand( ent-g_entities, 
+		va("print \"Rubber projectiles %s\n\"", 
+			ent->client->rubbergun ? "enabled" : "disabled"));
 	return;
 }
 // END UNLOX
@@ -1788,6 +1807,9 @@ void ClientCommand( int clientNum ) {
 	// UNLOX - Toggle guided missiles
 	else if (Q_stricmp (cmd, "guidedmissile") == 0)
 		Cmd_GuidedMissile_f (ent); 
+	// UNLOX - Toggle rubber projectiles
+	else if (Q_stricmp (cmd, "rubbergun") == 0)
+		Cmd_RubberGun_f (ent); 
 	// UNLOX - Spawn turret
 	else if (Q_stricmp (cmd, "spawnturret") == 0)
 		Cmd_SpawnTurret_f (ent); 

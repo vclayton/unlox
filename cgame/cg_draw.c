@@ -598,7 +598,7 @@ static void CG_DrawStatusBar( void ) {
 	// ammo
 	//
 	if ( cent->currentState.weapon ) {
-		value = ps->ammo[cent->currentState.weapon];
+		value = ps->ammo[ammoType(cent->currentState.weapon)];
 		if ( value > -1 ) {
 			if ( cg.predictedPlayerState.weaponstate == WEAPON_FIRING
 				&& cg.predictedPlayerState.weaponTime > 100 ) {

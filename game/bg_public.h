@@ -319,7 +319,14 @@ typedef enum {
 	WP_PROX_LAUNCHER,
 	WP_CHAINGUN,
 #endif
-
+	
+	// UNLOX
+	WP_SHOTGRENADE,
+	WP_SHOTPLASMA,
+	WP_SHOTRAIL,
+	WP_CHAINRAIL,
+	// END UNLOX
+	
 	WP_NUM_WEAPONS
 } weapon_t;
 

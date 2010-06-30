@@ -1537,7 +1537,10 @@ Generates weapon events and modifes the weapon counter
 */
 static void PM_Weapon( void ) {
 	int		addTime;
-
+	int ammotype;
+	
+	ammotype = ammoType(pm->ps->weapon);
+	
 	// don't allow attack until all buttons are up
 	if ( pm->ps->pm_flags & PMF_RESPAWNED ) {
 		return;
@@ -1629,7 +1632,7 @@ static void PM_Weapon( void ) {
 	pm->ps->weaponstate = WEAPON_FIRING;
 
 	// check for out of ammo
-	if ( ! pm->ps->ammo[ pm->ps->weapon ] ) {
+	if ( ! pm->ps->ammo[ ammotype ] ) {
 		PM_AddEvent( EV_NOAMMO );
 		pm->ps->weaponTime += 500;
 		return;
@@ -1637,8 +1640,8 @@ static void PM_Weapon( void ) {
 
 	// take an ammo away if not infinite
 	// UNLOX - Except if we're guiding a missile
-	if ( pm->ps->ammo[ pm->ps->weapon ] != -1 && pm->ps->generic1==0) {
-		pm->ps->ammo[ pm->ps->weapon ]--;
+	if ( pm->ps->ammo[ ammotype ] != -1 && pm->ps->generic1==0) {
+		pm->ps->ammo[ ammotype ]--;
 	}
 	// END UNLOX
 	
@@ -1688,6 +1691,19 @@ static void PM_Weapon( void ) {
 		addTime = 30;
 		break;
 #endif
+	case WP_SHOTGRENADE:
+		addTime = 1000;
+		break;
+	case WP_SHOTPLASMA:
+		addTime = 300;
+		break;
+	case WP_SHOTRAIL:
+		addTime = 1000;
+		break;
+	case WP_CHAINRAIL:
+		addTime = 100;
+		break;
+		
 	}
 
 #ifdef MISSIONPACK
@@ -1867,7 +1883,7 @@ void PmoveSingle (pmove_t *pmove) {
 
 	// set the firing flag for continuous beam weapons
 	if ( !(pm->ps->pm_flags & PMF_RESPAWNED) && pm->ps->pm_type != PM_INTERMISSION
-		&& ( pm->cmd.buttons & BUTTON_ATTACK ) && pm->ps->ammo[ pm->ps->weapon ] ) {
+		&& ( pm->cmd.buttons & BUTTON_ATTACK ) && pm->ps->ammo[ ammoType(pm->ps->weapon) ] ) {
 		pm->ps->eFlags |= EF_FIRING;
 	} else {
 		pm->ps->eFlags &= ~EF_FIRING;

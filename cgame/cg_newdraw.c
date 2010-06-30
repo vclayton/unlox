@@ -256,7 +256,7 @@ static void CG_DrawPlayerAmmoValue(rectDef_t *rect, float scale, vec4_t color, q
 	ps = &cg.snap->ps;
 
 	if ( cent->currentState.weapon ) {
-		value = ps->ammo[cent->currentState.weapon];
+		value = ps->ammo[ammoType(cent->currentState.weapon)];
 		if ( value > -1 ) {
 			if (shader) {
 		    trap_R_SetColor( color );
@@ -931,7 +931,7 @@ float CG_GetValue(int ownerDraw) {
     break;
   case CG_PLAYER_AMMO_VALUE:
 		if ( cent->currentState.weapon ) {
-		  return ps->ammo[cent->currentState.weapon];
+		  return ps->ammo[ammoType(cent->currentState.weapon)];
 		}
     break;
   case CG_PLAYER_SCORE:

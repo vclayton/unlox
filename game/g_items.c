@@ -258,7 +258,44 @@ int Pickup_Weapon (gentity_t *ent, gentity_t *other) {
 
 	// add the weapon
 	other->client->ps.stats[STAT_WEAPONS] |= ( 1 << ent->item->giTag );
-
+	// UNLOX - Multiple pickup for related weapons
+	switch(ent->item->giTag) {
+		case WP_SHOTGUN:
+			if( other->client->ps.stats[STAT_WEAPONS] & (1<<WP_RAILGUN) ) {
+				other->client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SHOTRAIL );
+				Add_Ammo( other, WP_SHOTRAIL, quantity );
+			}
+			if( other->client->ps.stats[STAT_WEAPONS] & (1<<WP_GRENADE_LAUNCHER) ) {
+				other->client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SHOTGRENADE );
+				Add_Ammo( other, WP_SHOTGRENADE, quantity );
+			}
+			if( other->client->ps.stats[STAT_WEAPONS] & (1<<WP_PLASMAGUN) ) {
+				other->client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SHOTPLASMA );
+				Add_Ammo( other, WP_SHOTPLASMA, quantity );
+			}
+			break;
+		case WP_GRENADE_LAUNCHER:
+			if( other->client->ps.stats[STAT_WEAPONS] & (1<<WP_SHOTGUN) ) {
+				other->client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SHOTGRENADE );
+				Add_Ammo( other, WP_SHOTGRENADE, quantity );
+			}
+			break;
+		case WP_PLASMAGUN:
+			if( other->client->ps.stats[STAT_WEAPONS] & (1<<WP_SHOTGUN) ) {
+				other->client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SHOTPLASMA );
+				Add_Ammo( other, WP_SHOTPLASMA, quantity );
+			}
+			break;
+		case WP_RAILGUN:
+			other->client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_CHAINRAIL );
+			if( other->client->ps.stats[STAT_WEAPONS] & (1<<WP_SHOTGUN) ) {
+				other->client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SHOTRAIL );
+			}
+			break;
+		default:
+			break;
+	}
+	// END UNLOX
 	Add_Ammo( other, ent->item->giTag, quantity );
 
 	if (ent->item->giTag == WP_GRAPPLING_HOOK)
@@ -815,6 +852,8 @@ void ClearRegisteredItems( void ) {
 	RegisterItem( BG_FindItemForWeapon( WP_GRAPPLING_HOOK ) );
 	// UNLOX - For cluster grenade warheads
 	RegisterItem( BG_FindItemForWeapon( WP_GRENADE_LAUNCHER ) );
+	// UNLOX - For railbomb warheads
+	RegisterItem( BG_FindItemForWeapon( WP_RAILGUN ) );
 	// END UNLOX
 }
 

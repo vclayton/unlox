@@ -320,6 +320,7 @@ struct gclient_s {
 	int			warhead;			// Currently selected warhead type
 	// UNLOX - Guided missile
 	int			guidedmissile;		// toggle guided on/off
+	int			rubbergun;			// toggle bouncing projectiles on/off
 	// END UNLOX
 
 	int			switchTeamTime;		// time the player switched teams

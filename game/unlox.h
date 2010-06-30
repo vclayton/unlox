@@ -2,9 +2,12 @@ typedef enum {
 	WH_ROCKET,
 	WH_CLUSTER,
 	WH_TELEPORT,
+	WH_RAILBOMB,
 	WH_MAX,		// Must always be the LAST entry in the enum!
 } warhead_t;
 
+
+#define MAX_RAIL_BOUNCE 4
 
 typedef struct grapplestuff_s {
 	unsigned int damage;
@@ -28,6 +31,7 @@ typedef struct grapplestuff_s {
 
 extern grapplestuff_t grapple;
 
+int ammoType( int weapon );
 qboolean visible( gentity_t *ent1, gentity_t *ent2 );
 void turret_think( gentity_t *ent );
 void turret_spawn( gentity_t *ent );

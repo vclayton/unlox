@@ -10,6 +10,11 @@ void Warhead_Rocket( gentity_t *ent )
 void Warhead_ClusterGrenade( gentity_t *ent )
 {
 	vec3_t dir;
+	int tmpWarhead;
+	
+	// Avoid recursive clustering
+	tmpWarhead = ent->parent->client->warhead;
+	ent->parent->client->warhead = WH_ROCKET;
 	
 	VectorSet(dir, 20, 20, 40);
 	fire_grenade(ent->parent, ent->r.currentOrigin, dir);
@@ -19,6 +24,8 @@ void Warhead_ClusterGrenade( gentity_t *ent )
 	fire_grenade(ent->parent, ent->r.currentOrigin, dir);
 	VectorSet(dir, -20, -20, 40);
 	fire_grenade(ent->parent, ent->r.currentOrigin, dir);
+	
+	ent->parent->client->warhead = tmpWarhead;
 }
 
 void Warhead_Teleport( gentity_t *ent )
@@ -73,6 +80,23 @@ void Warhead_Teleport( gentity_t *ent )
 }
 
 
+void Warhead_Railbomb( gentity_t *ent )
+{
+	vec3_t angles, fwd, rt, up, origForward;
+	int tmpWarhead;
+	int x;
+	float r;
+	
+	for(x=0; x<5; x++) {
+		r = random() * M_PI * 2.0f;
+		VectorSet( angles, r, 0.0, 0.0 );
+//		AngleVectors( angles, forward, rt, up );
+		weapon_railgun_fire( ent );
+	}
+}
+
+
+
 void Warhead_Explode( gentity_t *ent )
 {
 //	trap_SendServerCommand( ent->r.ownerNum, va("print \"Warhead type %d\n\"", ent->warhead));
@@ -86,6 +110,9 @@ void Warhead_Explode( gentity_t *ent )
 			break;
 		case WH_TELEPORT:
 			Warhead_Teleport( ent );
+			break;
+		case WH_RAILBOMB:
+			Warhead_Railbomb( ent );
 			break;
 		default:
 			trap_SendServerCommand( ent->r.ownerNum, va("print \"Unknown warhead type %d\n\"", ent->warhead));

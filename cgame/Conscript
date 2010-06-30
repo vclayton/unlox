@@ -62,6 +62,7 @@ $vm_ta_env = new cons(%vm_ta_env_hash);
   ../game/bg_slidemove.c
   ../game/q_math.c
   ../game/q_shared.c
+  ../game/unlox.c
   cg_consolecmds.c  
   cg_draw.c
   cg_drawtools.c

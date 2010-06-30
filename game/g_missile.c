@@ -542,6 +542,11 @@ void G_RunMissile( gentity_t *ent ) {
 	if ( ent->target_ent ) {
 		passent = ent->target_ent->s.number;
 	}
+	// UNLOX - bouncy projectiles can kill their owner, once they leave the bbox
+	else if ( ent->s.eFlags & EF_BOUNCE && ent->count ) {
+		passent = ENTITYNUM_NONE;
+	}
+	// END UNLOX
 #ifdef MISSIONPACK
 	// prox mines that left the owner bbox will attach to anything, even the owner
 	else if (ent->s.weapon == WP_PROX_LAUNCHER && ent->count) {
@@ -586,16 +591,22 @@ void G_RunMissile( gentity_t *ent ) {
 			return;		// exploded
 		}
 	}
+	// UNLOX - We want the same bbox check for bouncing projectiles
 #ifdef MISSIONPACK
 	// if the prox mine wasn't yet outside the player body
-	if (ent->s.weapon == WP_PROX_LAUNCHER && !ent->count) {
+	if (ent->s.weapon == WP_PROX_LAUNCHER && !ent->count) 
+#else
+	if (ent->s.eFlags & EF_BOUNCE && !ent->count) 
+#endif
+	{
 		// check if the prox mine is outside the owner bbox
 		trap_Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ent->r.currentOrigin, ENTITYNUM_NONE, ent->clipmask );
 		if (!tr.startsolid || tr.entityNum != ent->r.ownerNum) {
 			ent->count = 1;
 		}
 	}
-#endif
+	// END UNLOX
+	
 	// check think function after bouncing
 	G_RunThink( ent );
 }
@@ -630,6 +641,11 @@ gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t dir) {
 	bolt->splashMethodOfDeath = MOD_PLASMA_SPLASH;
 	bolt->clipmask = MASK_SHOT;
 	bolt->target_ent = NULL;
+	// Bouncing plasma
+	if(self->client->rubbergun) {
+		bolt->s.eFlags |= EF_BOUNCE;
+		bolt->nextthink = level.time + 1000;
+	}
 
 	bolt->s.pos.trType = TR_LINEAR;
 	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
@@ -672,7 +688,14 @@ gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t dir) {
 	bolt->splashMethodOfDeath = MOD_GRENADE_SPLASH;
 	bolt->clipmask = MASK_SHOT;
 	bolt->target_ent = NULL;
-
+	
+	// UNLOX - warheads
+	if(self->client)
+	{
+		bolt->warhead = self->client->warhead;
+	}
+	// END UNLOX
+	
 	bolt->s.pos.trType = TR_GRAVITY;
 	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
 	VectorCopy( start, bolt->s.pos.trBase );
@@ -760,6 +783,11 @@ gentity_t *fire_rocket (gentity_t *self, vec3_t start, vec3_t dir) {
 	if(self->client)
 	{
 		bolt->warhead = self->client->warhead;
+		// Bouncing rockets
+		if(self->client->rubbergun) {
+			bolt->s.eFlags |= EF_BOUNCE;
+			bolt->nextthink = level.time + 5000;
+		}
 		if(self->client->guidedmissile && !self->client->ps.generic1) {
 			bolt->think = Guided_Missile_Think;
 			bolt->nextthink = level.time + FRAMETIME;
