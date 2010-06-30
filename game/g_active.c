@@ -851,13 +851,17 @@ void ClientThink_real( gentity_t *ent ) {
 	if ( client->ps.powerups[PW_HASTE] ) {
 		client->ps.speed *= 1.3;
 	}
-
-	// Let go of the hook if we aren't firing
-	if ( client->ps.weapon == WP_GRAPPLING_HOOK &&
-		client->hook && !( ucmd->buttons & BUTTON_ATTACK ) ) {
-		Weapon_HookFree(client->hook);
+	
+	// UNLOX - offhand grapple
+	if ( !grapple.offhand ) {
+		// Let go of the [on-hand] hook if we aren't firing
+		if ( client->ps.weapon == WP_GRAPPLING_HOOK &&
+			client->hook && !( ucmd->buttons & BUTTON_ATTACK ) ) {
+			Weapon_HookFree(client->hook);
+		}
 	}
-
+	// END UNLOX
+	
 	// set up for pmove
 	oldEventSequence = client->ps.eventSequence;
 
@@ -952,11 +956,37 @@ void ClientThink_real( gentity_t *ent ) {
 		BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qtrue );
 	}
 	SendPendingPredictableEvents( &ent->client->ps );
-
-	if ( !( ent->client->ps.eFlags & EF_FIRING ) ) {
-		client->fireHeld = qfalse;		// for grapple
+	
+	// UNLOX - offhand grapple (From corncob mod)
+	if( !grapple.offhand ) {
+		if ( !( ent->client->ps.eFlags & EF_FIRING ) ) {
+			client->fireHeld = qfalse;		// for grapple
+		}
+		if ( (pm.cmd.buttons & BUTTON_OFFHAND) && ent->client->ps.pm_type != PM_DEAD) {
+			if(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_GRAPPLING_HOOK))
+			{
+				//G_AddEvent(ent, EV_CHANGE_WEAPON, 0 );
+				trap_SendServerCommand( ent->client - level.clients, "weapon gr");
+			}
+		}
+	} else {
+		// Willi - Offhand Grappling Hook
+		if ( (pm.cmd.buttons & BUTTON_OFFHAND)  && ent->client->ps.pm_type != PM_DEAD && !ent->client->hookHasBeenFired)
+		{
+			Weapon_GrapplingHook_Fire( ent );
+			ent->client->hookHasBeenFired = qtrue;
+		}
+		if ( !(pm.cmd.buttons & BUTTON_OFFHAND)  && ent->client->ps.pm_type != PM_DEAD && ent->client->hookHasBeenFired && ent->client->fireHeld)
+		{
+			ent->client->fireHeld = qfalse;
+			ent->client->hookHasBeenFired = qfalse;
+		}
+		if ( client->hook && client->fireHeld == qfalse ) {
+			Weapon_HookFree(client->hook);
+		}
 	}
-
+	// END UNLOX
+	
 	// use the snapped origin for linking so it matches client predicted versions
 	VectorCopy( ent->s.pos.trBase, ent->r.currentOrigin );
 

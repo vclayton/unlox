@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "bg_public.h"
 #include "g_public.h"
 
+#include "unlox_structs.h"
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
@@ -308,6 +309,9 @@ struct gclient_s {
 
 	qboolean	fireHeld;			// used for hook
 	gentity_t	*hook;				// grapple hook if out
+	// UNLOX - Offhand grapple
+	qboolean hookHasBeenFired;
+	// END UNLOX
 
 	int			switchTeamTime;		// time the player switched teams
 

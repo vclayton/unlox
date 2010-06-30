@@ -512,7 +512,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 
 	G_RemapTeamShaders();
-
+	
+	// UNLOX
+	grapple.offhand = 1;
+	// END UNLOX
 }
 
 

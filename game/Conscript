@@ -87,6 +87,7 @@ $vm_ta_env = new cons(%vm_ta_env_hash);
   g_weapon.c
   q_math.c
   q_shared.c
+  unlox_structs.c
   );
 $FILESREF = \@FILES;
 

@@ -809,6 +809,11 @@ void ClearRegisteredItems( void ) {
 		RegisterItem( BG_FindItem( "Blue Cube" ) );
 	}
 #endif
+	
+	// UNLOX - Willi - Grappling Hook
+	RegisterItem( BG_FindItemForWeapon( WP_LIGHTNING ) );
+	RegisterItem( BG_FindItemForWeapon( WP_GRAPPLING_HOOK ) );
+	// END UNLOX
 }
 
 /*

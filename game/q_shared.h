@@ -1240,6 +1240,10 @@ typedef struct playerState_s {
 #define BUTTON_FOLLOWME		1024
 
 #define	BUTTON_ANY			2048			// any key whatsoever
+// UNLOX - (From CORNCOBMAN)
+#define BUTTON_ALT_ATTACK       4096 // button12
+#define BUTTON_OFFHAND          32 // button13
+//END UNLOX
 
 #define	MOVE_RUN			120			// if forwardmove or rightmove are >= MOVE_RUN,
 										// then BUTTON_WALKING should be set

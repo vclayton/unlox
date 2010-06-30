@@ -571,6 +571,11 @@ GRAPPLING HOOK
 
 void Weapon_GrapplingHook_Fire (gentity_t *ent)
 {
+	// UNLOX // Willi - Offhand Grappling Hook
+	AngleVectors (ent->client->ps.viewangles, forward, right, up);
+	CalcMuzzlePoint ( ent, forward, right, up, muzzle );
+	// END UNLOX
+	
 	if (!ent->client->fireHeld && !ent->client->hook)
 		fire_grapple (ent, muzzle, forward);
 
