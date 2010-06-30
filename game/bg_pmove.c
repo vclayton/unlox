@@ -1805,22 +1805,23 @@ void PM_UpdateViewAngles( playerState_t *ps, const usercmd_t *cmd ) {
 	if ( ps->pm_type != PM_SPECTATOR && ps->stats[STAT_HEALTH] <= 0 ) {
 		return;		// no view changes at all
 	}
-
+// UNLOX - Tweak so that you can look straight up/down (instead of 16000)
 	// circularly clamp the angles with deltas
 	for (i=0 ; i<3 ; i++) {
 		temp = cmd->angles[i] + ps->delta_angles[i];
 		if ( i == PITCH ) {
 			// don't let the player look up or down more than 90 degrees
-			if ( temp > 16000 ) {
-				ps->delta_angles[i] = 16000 - cmd->angles[i];
-				temp = 16000;
-			} else if ( temp < -16000 ) {
-				ps->delta_angles[i] = -16000 - cmd->angles[i];
-				temp = -16000;
+			if ( temp > 16384 ) {
+				ps->delta_angles[i] = 16384 - cmd->angles[i];
+				temp = 16384;
+			} else if ( temp < -16384 ) {
+				ps->delta_angles[i] = -16384 - cmd->angles[i];
+				temp = -16384;
 			}
 		}
 		ps->viewangles[i] = SHORT2ANGLE(temp);
 	}
+// END UNLOX
 
 }
 

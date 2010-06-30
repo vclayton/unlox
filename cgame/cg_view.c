@@ -679,33 +679,35 @@ static int CG_CalcViewValues( void ) {
 		}
 	}
 
-	if ( cg.renderingThirdPerson ) {
+
+	// UNLOX - Missilecam: ps->generic1 should be entitynum of missile
+	if(ps->generic1 > 0) {
+				missile = &cg_entities[ps->generic1];
+		missilenum = ps->generic1;
+		if(missile->currentState.eType==ET_MISSILE) {
+			VectorCopy(missile->lerpOrigin, cg.refdef.vieworg); // Camera at missile origin
+//			VectorCopy(missile->currentState.origin, cg.refdef.vieworg); // Camera at missile origin
+			
+			AngleVectors(missile->lerpAngles, offset, right, up);
+			VectorNormalize(offset);
+			VectorScale(offset, -50, offset);
+			VectorAdd(cg.refdef.vieworg, offset, cg.refdef.vieworg) ; // Now back up some so we can see the missile
+		}
+	} else if ( cg.renderingThirdPerson ) {
+	// END UNLOX
 		// back away from character
 		CG_OffsetThirdPersonView();
 	} else {
 		// offset for local bobbing and kicks
 		CG_OffsetFirstPersonView();
 	}
-
+	
 	// position eye reletive to origin
 	AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
 
 	if ( cg.hyperspace ) {
 		cg.refdef.rdflags |= RDF_NOWORLDMODEL | RDF_HYPERSPACE;
 	}
-
-
-	// UNLOX - Missilecam: ps->generic1 should be entitynum of missile
-	if(ps->generic1 > 0) {
-		missile = &cg_entities[ps->generic1];
-		missilenum = ps->generic1;
-		if(missile->currentState.eType==ET_MISSILE) {
-			VectorCopy(missile->lerpOrigin, cg.refdef.vieworg); // Camera at missile origin
-			// @todo It would be nice to back the camera up a bit too.
-			// @todo And is there a more stable origin/angle than lerpOrigin/Angle?
-		}
-	}
-	// END UNLOX
 
 
 	// field of view
